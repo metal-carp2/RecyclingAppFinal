@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -25,12 +25,31 @@ const initialFields: FieldState = {
   steel: { value: '', unit: 'lbs' },
   plastics: { value: '', unit: 'lbs' },
   compostables: { value: '', unit: 'lbs' },
+  glass: { value: '', unit: 'lbs' },
 };
 
-export default function RewardsScreen({ navigation }: Props) {
+export default function RewardsScreen({ navigation, route }: Props) {
   const { theme } = useApp();
   const [fields, setFields] = useState<FieldState>(initialFields);
   const [total, setTotal] = useState<number | null>(null);
+  const [prefilled, setPrefilled] = useState(false);
+
+  useEffect(() => {
+    const prefill = route.params?.prefill;
+    if (!prefill || prefill.length === 0) return;
+    setFields((prev) => {
+      const next: FieldState = { ...prev };
+      for (const item of prefill) {
+        const existingGrams = next[item.material].value ? parseFloat(next[item.material].value) : 0;
+        next[item.material] = {
+          value: String((isNaN(existingGrams) ? 0 : existingGrams) + item.grams),
+          unit: 'g',
+        };
+      }
+      return next;
+    });
+    setPrefilled(true);
+  }, [route.params?.prefill]);
 
   const updateValue = (key: MaterialKey, value: string) => {
     setFields((prev) => ({ ...prev, [key]: { ...prev[key], value } }));
@@ -61,6 +80,12 @@ export default function RewardsScreen({ navigation }: Props) {
         </TouchableOpacity>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Text style={[styles.title, { color: theme.text }]}>Recycling Cash Out Calculator</Text>
+
+          {prefilled && (
+            <Text style={[styles.prefillNote, { color: theme.text }]}>
+              Filled in from your last scan — feel free to adjust before calculating.
+            </Text>
+          )}
 
           {MATERIALS.map((material) => (
             <WeightInput
@@ -95,7 +120,8 @@ const styles = StyleSheet.create({
   backRow: { paddingHorizontal: 20, paddingTop: 12 },
   backText: { fontSize: 18, fontWeight: '600' },
   content: { paddingHorizontal: 24, paddingTop: 12, paddingBottom: 48 },
-  title: { fontSize: 30, fontWeight: '800', marginBottom: 28 },
+  title: { fontSize: 30, fontWeight: '800', marginBottom: 12 },
+  prefillNote: { fontSize: 14, fontWeight: '600', marginBottom: 20, opacity: 0.85 },
   button: {
     borderRadius: 14,
     paddingVertical: 18,

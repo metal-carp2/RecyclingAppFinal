@@ -1,4 +1,4 @@
-export type MaterialKey = 'paper' | 'aluminum' | 'steel' | 'plastics' | 'compostables';
+export type MaterialKey = 'paper' | 'aluminum' | 'steel' | 'plastics' | 'compostables' | 'glass';
 
 export type MaterialDef = {
   key: MaterialKey;
@@ -9,12 +9,16 @@ export type MaterialDef = {
 
 // Rates derived from the original app's demo: 45 lbs of aluminum -> $22.50 (=$0.50/lb).
 // Other materials' rates are estimated from typical scrap recycling cash-back values.
+// Glass was added for the barcode-scanner integration (Open Food Facts reports it
+// constantly as a packaging material); most curbside cash-back programs pay little to
+// nothing for glass because of its weight-to-value ratio, so it's rated at $0/lb here.
 export const MATERIALS: MaterialDef[] = [
   { key: 'paper', label: 'Paper', ratePerPound: 0.09 },
   { key: 'aluminum', label: 'Aluminum', ratePerPound: 0.5 },
   { key: 'steel', label: 'Steel', ratePerPound: 0.25 },
   { key: 'plastics', label: 'Plastics', ratePerPound: 0.1 },
   { key: 'compostables', label: 'Compostables', ratePerPound: 0 },
+  { key: 'glass', label: 'Glass', ratePerPound: 0 },
 ];
 
 export type WeightUnit = 'lbs' | 'g' | 'kg' | 'oz';
